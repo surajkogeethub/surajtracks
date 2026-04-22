@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Suraj's Gym Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #171717;
+    --card: #1e1e1e;
+    --border: #2a2a2a;
+    --accent: #c8f04a;
+    --accent2: #f0a04a;
+    --text: #f0ede6;
+    --muted: #888;
+    --protein-color: #c8f04a;
+    --calorie-color: #f0a04a;
+    --danger: #f04a4a;
+    --success: #4af0a0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* Header */
+  header {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .logo span { color: var(--accent); }
+  .date-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 5px 10px;
+    border-radius: 6px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 16px 24px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 8px 16px;
+    border-radius: 8px 8px 0 0;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    color: var(--text);
+    border-bottom: 2px solid var(--accent);
+  }
+
+  /* Main */
+  main { padding: 24px; max-width: 600px; margin: 0 auto; }
+
+  /* Goals bar */
+  .goals-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .goal-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .goal-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .goal-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .goal-value.protein { color: var(--protein-color); }
+  .goal-value.calorie { color: var(--calorie-color); }
+  .goal-sub { font-size: 0.7rem; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+
+  /* Progress bars */
+  .progress-section { margin-bottom: 20px; }
+  .progress-item { margin-bottom: 14px; }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 0.75rem;
+  }
+  .progress-name { font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .progress-nums { font-family: 'DM Mono', monospace; color: var(--muted); font-size: 0.7rem; }
+  .progress-track {
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .progress-fill.protein { background: var(--protein-color); }
+  .progress-fill.calorie { background: var(--calorie-color); }
+  .progress-fill.over { background: var(--danger); }
+
+  /* Add food section */
+  .section-title {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  /* Quick add buttons */
+  .quick-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .quick-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .quick-btn:hover {
+    border-color: var(--accent);
+    background: #1e1e1e;
+    transform: translateY(-1px);
+  }
+  .quick-btn:active { transform: scale(0.98); }
+  .qb-name { font-size: 0.8rem; font-weight: 700; color: var(--text); }
+  .qb-macros { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
+  .qb-add {
+    width: 22px; height: 22px;
+    background: var(--accent);
+    color: #000;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  /* Custom add */
+  .custom-form {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 20px;
+  }
+  .form-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .form-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-input::placeholder { color: var(--muted); }
+  .add-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .add-btn:hover { background: #d8ff5a; transform: translateY(-1px); }
+  .add-btn:active { transform: scale(0.98); }
+
+  /* Log list */
+  .log-list { display: flex; flex-direction: column; gap: 8px; }
+  .log-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: slideIn 0.25s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .log-name { font-size: 0.85rem; font-weight: 700; }
+  .log-time { font-size: 0.62rem; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .log-macros { display: flex; gap: 10px; align-items: center; }
+  .macro-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .macro-pill.p { background: rgba(200,240,74,0.12); color: var(--protein-color); }
+  .macro-pill.c { background: rgba(240,160,74,0.12); color: var(--calorie-color); }
+  .del-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color 0.15s;
+  }
+  .del-btn:hover { color: var(--danger); }
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    padding: 32px 0;
+    font-size: 0.85rem;
+  }
+  .empty-state .emoji { font-size: 2rem; display: block; margin-bottom: 8px; }
+
+  /* History tab */
+  .history-day {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .history-header:hover { background: var(--surface); }
+  .history-date { font-size: 0.8rem; font-weight: 700; }
+  .history-summary { display: flex; gap: 10px; }
+  .history-body { padding: 0 16px 12px; display: none; }
+  .history-body.open { display: block; }
+  .history-entry {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    font-size: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .history-entry:last-child { border-bottom: none; }
+
+  /* Settings tab */
+  .settings-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .settings-title { font-size: 0.8rem; font-weight: 700; margin-bottom: 12px; }
+  .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 12px;
+  }
+  .setting-label { font-size: 0.8rem; color: var(--muted); }
+  .setting-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    width: 90px;
+    text-align: right;
+    outline: none;
+  }
+  .setting-input:focus { border-color: var(--accent); }
+  .save-btn {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+  }
+  .save-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .reset-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    border-radius: 8px;
+    padding: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+    margin-top: 8px;
+  }
+  .reset-btn:hover { background: rgba(240,74,74,0.08); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--accent);
+    color: #000;
+    font-weight: 700;
+    font-size: 0.78rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+    z-index: 999;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Week chart */
+  .week-chart {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 80px;
+    margin-top: 12px;
+  }
+  .chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .chart-bar-wrap { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+  .chart-bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    min-height: 4px;
+    transition: height 0.4s ease;
+  }
+  .chart-bar.protein { background: var(--protein-color); }
+  .chart-bar.calorie { background: var(--calorie-color); opacity: 0.7; }
+  .chart-day-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: var(--muted); }
+  .chart-legend { display: flex; gap: 12px; margin-top: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.65rem; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">💪 GYM<span>TRACK</span></div>
+    <div style="font-size:0.7rem;color:var(--muted);margin-top:4px;">Suraj's Daily Tracker</div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+    <div class="date-badge" id="headerDate"></div>
+    <div id="syncStatus" style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted);transition:color 0.3s"></div>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('today')">Today</button>
+  <button class="tab" onclick="showTab('history')">History</button>
+  <button class="tab" onclick="showTab('settings')">Goals</button>
+</div>
+
+<main>
+
+  <!-- TODAY TAB -->
+  <div id="tab-today">
+    <div class="goals-row">
+      <div class="goal-card">
+        <div class="goal-label">Protein Today</div>
+        <div class="goal-value protein" id="proteinToday">0g</div>
+        <div class="goal-sub" id="proteinGoalSub">/ 120g goal</div>
+      </div>
+      <div class="goal-card">
+        <div class="goal-label">Calories Today</div>
+        <div class="goal-value calorie" id="caloriesToday">0</div>
+        <div class="goal-sub" id="calorieGoalSub">/ 2800 kcal goal</div>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-item">
+        <div class="progress-header">
+          <span class="progress-name" style="color:var(--protein-color)">Protein</span>
+          <span class="progress-nums" id="proteinPct">0 / 120g</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill protein" id="proteinBar" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-header">
+          <span class="progress-name" style="color:var(--calorie-color)">Calories</span>
+          <span class="progress-nums" id="caloriePct">0 / 2800 kcal</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill calorie" id="calorieBar" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">⚡ Quick Add — Nepali Foods</div>
+    <div class="quick-grid" id="quickGrid"></div>
+
+    <div class="section-title">✏️ Custom Entry</div>
+    <div class="custom-form">
+      <div class="form-row">
+        <input class="form-input" id="customName" placeholder="Food name" />
+        <input class="form-input" id="customProtein" placeholder="Protein (g)" type="number" min="0"/>
+        <input class="form-input" id="customCalories" placeholder="Kcal" type="number" min="0"/>
+      </div>
+      <button class="add-btn" onclick="addCustom()">+ Add to Log</button>
+    </div>
+
+    <div class="section-title">📋 Today's Log</div>
+    <div class="log-list" id="logList"></div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div id="tab-history" style="display:none">
+    <div class="week-chart">
+      <div class="section-title" style="margin-bottom:0">7-Day Overview</div>
+      <div class="chart-bars" id="weekChart"></div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--protein-color)"></div>Protein</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--calorie-color);opacity:0.7"></div>Calories ÷10</div>
+      </div>
+    </div>
+    <div class="section-title">Past Days</div>
+    <div id="historyList"></div>
+  </div>
+
+  <!-- SETTINGS TAB -->
+  <div id="tab-settings" style="display:none">
+    <div class="settings-card">
+      <div class="settings-title">Daily Goals</div>
+      <div class="setting-row">
+        <span class="setting-label">Protein Goal (g)</span>
+        <input class="setting-input" id="setProteinGoal" type="number" value="120"/>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Calorie Goal (kcal)</span>
+        <input class="setting-input" id="setCalorieGoal" type="number" value="2800"/>
+      </div>
+      <button class="save-btn" onclick="saveGoals()">Save Goals</button>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-title">Your Plan Summary</div>
+      <div style="font-size:0.75rem;color:var(--muted);line-height:1.7">
+        🍗 Chicken (80g/day) — ~20g protein<br>
+        🫘 Dal (2 cups) — ~25g protein<br>
+        🥚 Eggs (2–3) — ~15g protein<br>
+        🥛 Milk + Dahi — ~20g protein<br>
+        🥤 Protein Powder (1 scoop) — ~25g protein<br>
+        <div style="margin-top:8px;color:var(--accent);font-weight:700">Total Target: ~120g protein / day</div>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-title" style="color:var(--danger)">Danger Zone</div>
+      <button class="reset-btn" onclick="resetToday()">Reset Today's Log</button>
+      <button class="reset-btn" onclick="resetAll()" style="margin-top:6px">Clear All History</button>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ─────────────────────────────────────────────
+let goals = { protein: 120, calories: 2800 };
+
+const QUICK_FOODS = [
+  { name: "Boiled Egg", protein: 6, calories: 70 },
+  { name: "Chicken 80g", protein: 20, calories: 136 },
+  { name: "Dal (1 cup)", protein: 12, calories: 150 },
+  { name: "Rice (1 cup)", protein: 4, calories: 200 },
+  { name: "Protein Shake", protein: 25, calories: 130 },
+  { name: "Milk (1 glass)", protein: 8, calories: 150 },
+  { name: "Dahi (1 cup)", protein: 8, calories: 100 },
+  { name: "Boiled Chana", protein: 15, calories: 180 },
+  { name: "Roti (1)", protein: 3, calories: 80 },
+  { name: "Rajma (1 cup)", protein: 13, calories: 210 },
+  { name: "Peanuts (30g)", protein: 7, calories: 170 },
+  { name: "Banana", protein: 1, calories: 90 },
+];
+
+// ── Google Sheets sync ────────────────────────────────
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwceHE-qnbww0CsrxE8bPPgupq-Prhe4FwC34ChZENs05oKrzW7Luys0MV64njb-4gE/exec';
+
+async function sheetPost(payload) {
+  try {
+    setSyncStatus('syncing');
+    await fetch(SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    setSyncStatus('ok');
+  } catch(e) {
+    console.warn('Sheet sync failed:', e);
+    setSyncStatus('err');
+  }
+}
+
+function setSyncStatus(status) {
+  const el = document.getElementById('syncStatus');
+  if (!el) return;
+  const map = { syncing: '⏳ Syncing…', ok: '✅ Synced to Google Sheets', err: '⚠️ Offline — saved locally only' };
+  el.textContent = map[status] || '';
+  el.style.color = status === 'ok' ? 'var(--accent)' : status === 'err' ? 'var(--danger)' : 'var(--muted)';
+}
+
+// ── Storage helpers ────────────────────────────────────
+function todayKey() {
+  return 'log_' + new Date().toISOString().slice(0,10);
+}
+function todayDate() {
+  return new Date().toISOString().slice(0,10);
+}
+function getLog(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; }
+}
+function saveLog(key, data) {
+  localStorage.setItem(key, JSON.stringify(data));
+}
+function loadGoals() {
+  try { const g = JSON.parse(localStorage.getItem('goals')); if(g) goals = g; } catch {}
+}
+function persistGoals() {
+  localStorage.setItem('goals', JSON.stringify(goals));
+}
+
+// ── Init ──────────────────────────────────────────────
+loadGoals();
+document.getElementById('headerDate').textContent = new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+document.getElementById('setProteinGoal').value = goals.protein;
+document.getElementById('setCalorieGoal').value = goals.calories;
+renderQuickGrid();
+renderToday();
+
+// ── Tab switching ─────────────────────────────────────
+function showTab(name) {
+  ['today','history','settings'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = (t===name ? 'block' : 'none');
+  });
+  document.querySelectorAll('.tab').forEach((btn,i) => {
+    btn.classList.toggle('active', ['today','history','settings'][i] === name);
+  });
+  if(name === 'history') renderHistory();
+}
+
+// ── Quick grid ────────────────────────────────────────
+function renderQuickGrid() {
+  const grid = document.getElementById('quickGrid');
+  grid.innerHTML = QUICK_FOODS.map((f,i) => `
+    <button class="quick-btn" onclick="quickAdd(${i})">
+      <div>
+        <div class="qb-name">${f.name}</div>
+        <div class="qb-macros">${f.protein}g protein · ${f.calories} kcal</div>
+      </div>
+      <div class="qb-add">+</div>
+    </button>
+  `).join('');
+}
+
+// ── Add food ──────────────────────────────────────────
+function quickAdd(idx) {
+  const f = QUICK_FOODS[idx];
+  const key = todayKey();
+  const log = getLog(key);
+  // Find existing entry with same name added today (merge)
+  const existing = log.find(e => e.name === f.name && e._base);
+  if (existing) {
+    existing.qty = (existing.qty || 1) + 1;
+    existing.protein = existing._base.protein * existing.qty;
+    existing.calories = existing._base.calories * existing.qty;
+    const time = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    sheetPost({ action: 'delete', date: todayDate(), food: existing.name, time: existing.time });
+    sheetPost({ action: 'add', date: todayDate(), time, food: existing.name, protein: existing.protein, calories: existing.calories, qty: existing.qty });
+    existing.time = time;
+    saveLog(key, log);
+    renderToday();
+    showToast(`${f.name} ×${existing.qty}`);
+  } else {
+    addEntry(f.name, f.protein, f.calories, { protein: f.protein, calories: f.calories });
+  }
+}
+
+function addCustom() {
+  const name = document.getElementById('customName').value.trim() || 'Custom Food';
+  const protein = parseFloat(document.getElementById('customProtein').value) || 0;
+  const calories = parseFloat(document.getElementById('customCalories').value) || 0;
+  addEntry(name, protein, calories, null);
+  document.getElementById('customName').value = '';
+  document.getElementById('customProtein').value = '';
+  document.getElementById('customCalories').value = '';
+}
+
+function addEntry(name, protein, calories, base) {
+  const key = todayKey();
+  const log = getLog(key);
+  const time = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  const entry = { name, protein, calories, qty: 1, time };
+  if (base) entry._base = base;
+  log.push(entry);
+  saveLog(key, log);
+  renderToday();
+  showToast(`+${protein}g protein added!`);
+  // Sync to Google Sheets
+  sheetPost({ action: 'add', date: todayDate(), time, food: name, protein, calories, qty: 1 });
+}
+
+function changeQty(idx, delta) {
+  const key = todayKey();
+  const log = getLog(key);
+  const e = log[idx];
+  if (!e || !e._base) return;
+  const newQty = (e.qty || 1) + delta;
+  const time = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  if (newQty <= 0) {
+    sheetPost({ action: 'delete', date: todayDate(), food: e.name, time: e.time });
+    log.splice(idx, 1);
+  } else {
+    e.qty = newQty;
+    e.protein = e._base.protein * newQty;
+    e.calories = e._base.calories * newQty;
+    // Update sheet: delete old row and re-add with new qty
+    sheetPost({ action: 'delete', date: todayDate(), food: e.name, time: e.time });
+    sheetPost({ action: 'add', date: todayDate(), time, food: e.name, protein: e.protein, calories: e.calories, qty: newQty });
+    e.time = time;
+  }
+  saveLog(key, log);
+  renderToday();
+}
+
+function deleteEntry(idx) {
+  const key = todayKey();
+  const log = getLog(key);
+  const e = log[idx];
+  sheetPost({ action: 'delete', date: todayDate(), food: e.name, time: e.time });
+  log.splice(idx, 1);
+  saveLog(key, log);
+  renderToday();
+}
+
+// ── Render today ──────────────────────────────────────
+function renderToday() {
+  const log = getLog(todayKey());
+  const totalP = log.reduce((s,e)=>s+e.protein,0);
+  const totalC = log.reduce((s,e)=>s+e.calories,0);
+
+  document.getElementById('proteinToday').textContent = totalP.toFixed(1) + 'g';
+  document.getElementById('caloriesToday').textContent = Math.round(totalC);
+  document.getElementById('proteinGoalSub').textContent = `/ ${goals.protein}g goal`;
+  document.getElementById('calorieGoalSub').textContent = `/ ${goals.calories} kcal goal`;
+  document.getElementById('proteinPct').textContent = `${totalP.toFixed(1)} / ${goals.protein}g`;
+  document.getElementById('caloriePct').textContent = `${Math.round(totalC)} / ${goals.calories} kcal`;
+
+  const pPct = Math.min((totalP/goals.protein)*100, 100);
+  const cPct = Math.min((totalC/goals.calories)*100, 100);
+  const pBar = document.getElementById('proteinBar');
+  const cBar = document.getElementById('calorieBar');
+  pBar.style.width = pPct + '%';
+  cBar.style.width = cPct + '%';
+  pBar.className = 'progress-fill ' + (totalP > goals.protein ? 'over' : 'protein');
+  cBar.className = 'progress-fill ' + (totalC > goals.calories ? 'over' : 'calorie');
+
+  const list = document.getElementById('logList');
+  if(log.length === 0) {
+    list.innerHTML = `<div class="empty-state"><span class="emoji">🍽️</span>No food logged yet today.<br>Add something above!</div>`;
+    return;
+  }
+  list.innerHTML = [...log].reverse().map((e, ri) => {
+    const idx = log.length - 1 - ri;
+    const qty = e.qty || 1;
+    const hasBase = !!e._base;
+    const qtyBadge = qty > 1 ? `<span style="background:var(--accent);color:#000;font-size:0.65rem;font-weight:800;padding:1px 6px;border-radius:4px;font-family:'DM Mono',monospace">×${qty}</span>` : '';
+    const steppers = hasBase ? `
+      <button class="del-btn" onclick="changeQty(${idx},-1)" style="font-size:1.1rem;padding:0 5px" title="Remove one">−</button>
+      <button class="del-btn" onclick="changeQty(${idx},1)" style="font-size:1.1rem;padding:0 5px;color:var(--accent)" title="Add one">+</button>` : '';
+    return `
+    <div class="log-item">
+      <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+        <div class="log-name">${e.name}</div>
+        ${qtyBadge}
+        <div class="log-time">${e.time}</div>
+      </div>
+      <div class="log-macros">
+        <span class="macro-pill p">${parseFloat(e.protein).toFixed(1)}g P</span>
+        <span class="macro-pill c">${Math.round(e.calories)} kcal</span>
+        ${steppers}
+        <button class="del-btn" onclick="deleteEntry(${idx})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── History ───────────────────────────────────────────
+function renderHistory() {
+  const keys = Object.keys(localStorage)
+    .filter(k => k.startsWith('log_'))
+    .sort().reverse();
+
+  // Week chart
+  const last7 = [];
+  for(let i=6;i>=0;i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const key = 'log_' + d.toISOString().slice(0,10);
+    const log = getLog(key);
+    last7.push({
+      day: d.toLocaleDateString('en-GB',{weekday:'short'}),
+      protein: log.reduce((s,e)=>s+e.protein,0),
+      calories: log.reduce((s,e)=>s+e.calories,0),
+    });
+  }
+  const maxP = Math.max(...last7.map(d=>d.protein), goals.protein);
+  const chart = document.getElementById('weekChart');
+  chart.innerHTML = last7.map(d => {
+    const ph = Math.round((d.protein / maxP) * 70);
+    const ch = Math.round(((d.calories/10) / maxP) * 70);
+    return `
+      <div class="chart-col">
+        <div class="chart-bar-wrap" style="position:relative;gap:2px;display:flex;align-items:flex-end;">
+          <div class="chart-bar protein" style="height:${ph}px;flex:1"></div>
+          <div class="chart-bar calorie" style="height:${ch}px;flex:1"></div>
+        </div>
+        <div class="chart-day-label">${d.day}</div>
+      </div>`;
+  }).join('');
+
+  // List
+  const histList = document.getElementById('historyList');
+  if(keys.length === 0) {
+    histList.innerHTML = `<div class="empty-state"><span class="emoji">📅</span>No history yet.</div>`;
+    return;
+  }
+  histList.innerHTML = keys.map(key => {
+    const log = getLog(key);
+    const totalP = log.reduce((s,e)=>s+e.protein,0);
+    const totalC = log.reduce((s,e)=>s+e.calories,0);
+    const dateStr = key.replace('log_','');
+    const d = new Date(dateStr);
+    const label = d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
+    const isToday = dateStr === new Date().toISOString().slice(0,10);
+    return `
+    <div class="history-day">
+      <div class="history-header" onclick="toggleHistory('${key}')">
+        <div>
+          <div class="history-date">${label} ${isToday?'<span style="color:var(--accent);font-size:0.65rem">TODAY</span>':''}</div>
+        </div>
+        <div class="history-summary">
+          <span class="macro-pill p" style="font-family:'DM Mono';font-size:0.65rem;padding:2px 7px;border-radius:4px;background:rgba(200,240,74,0.12);color:var(--protein-color)">${totalP.toFixed(0)}g P</span>
+          <span class="macro-pill c" style="font-family:'DM Mono';font-size:0.65rem;padding:2px 7px;border-radius:4px;background:rgba(240,160,74,0.12);color:var(--calorie-color)">${Math.round(totalC)} kcal</span>
+        </div>
+      </div>
+      <div class="history-body" id="hist-${key}">
+        ${log.map(e=>`
+          <div class="history-entry">
+            <span>${e.name}</span>
+            <span>${e.protein}g · ${e.calories} kcal · ${e.time}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleHistory(key) {
+  const el = document.getElementById('hist-' + key);
+  el.classList.toggle('open');
+}
+
+// ── Settings ──────────────────────────────────────────
+function saveGoals() {
+  goals.protein = parseInt(document.getElementById('setProteinGoal').value) || 120;
+  goals.calories = parseInt(document.getElementById('setCalorieGoal').value) || 2800;
+  persistGoals();
+  renderToday();
+  showToast('Goals saved!');
+}
+
+function resetToday() {
+  if(confirm('Reset today\'s log?')) {
+    localStorage.removeItem(todayKey());
+    renderToday();
+    showToast('Today reset!');
+  }
+}
+
+function resetAll() {
+  if(confirm('Clear ALL history? This cannot be undone.')) {
+    Object.keys(localStorage).filter(k=>k.startsWith('log_')).forEach(k=>localStorage.removeItem(k));
+    renderToday();
+    showToast('All history cleared!');
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+</script>
+</body>
+</html>
